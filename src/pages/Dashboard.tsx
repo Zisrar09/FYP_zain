@@ -1,8 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Users, Calendar, Briefcase, CheckSquare, Clock, DollarSign } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -33,6 +36,8 @@ function parseDesignation(d: string | null) {
 
 export default function Dashboard() {
   const { role, user } = useAuth();
+  const queryClient = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dash", role, user?.id],
@@ -87,6 +92,88 @@ export default function Dashboard() {
     staleTime: 0,
   });
 
+  const handleSeedData = async () => {
+    setSeeding(true);
+    try {
+      // 1. Ensure departments exist
+      const deptNames = ["IT & Development", "Human Resources", "Sales & Marketing"];
+      const depts: Record<string, string> = {};
+
+      for (const name of deptNames) {
+        const { data: existing } = await supabase.from("departments").select("id").eq("name", name).maybeSingle();
+        if (existing) {
+          depts[name] = existing.id;
+        } else {
+          const { data: created, error } = await supabase.from("departments").insert({ name, description: `${name} department` }).select("id").single();
+          if (error) throw error;
+          if (created) depts[name] = created.id;
+        }
+      }
+
+      // 2. Insert employees
+      const employeeData = [
+        { full_name: "Zain Israr", email: "zain@example.com", phone: "+92 300 1234567", department_id: depts["IT & Development"], designation: "Senior Developer | Salary: 150000" },
+        { full_name: "Sarah Khan", email: "sarah@example.com", phone: "+92 321 7654321", department_id: depts["Human Resources"], designation: "HR Manager | Salary: 120000" },
+        { full_name: "Ahmed Ali", email: "ahmed@example.com", phone: "+92 333 9876543", department_id: depts["Sales & Marketing"], designation: "Marketing Executive | Salary: 85000" },
+        { full_name: "Ayesha Tariq", email: "ayesha@example.com", phone: "+92 300 1112223", department_id: depts["IT & Development"], designation: "Frontend Developer | Salary: 100000" },
+        { full_name: "Bilal Hassan", email: "bilal@example.com", phone: "+92 311 4445556", department_id: depts["Sales & Marketing"], designation: "Sales Lead | Salary: 130000" }
+      ];
+
+      const createdEmployees = [];
+      for (const emp of employeeData) {
+        const { data: existing } = await supabase.from("employees").select("id").eq("email", emp.email).maybeSingle();
+        if (existing) {
+          createdEmployees.push(existing);
+        } else {
+          const { data: created, error } = await supabase.from("employees").insert(emp).select("id").single();
+          if (error) throw error;
+          if (created) createdEmployees.push(created);
+        }
+      }
+
+      // 3. Insert tasks
+      if (createdEmployees.length >= 4) {
+        const tasks = [
+          { title: "Complete Frontend Dashboard", description: "Finish the React components for dashboard.", assigned_to: createdEmployees[0].id, status: "in_progress", due_date: new Date(Date.now() + 86400000 * 2).toISOString() },
+          { title: "Review Q3 Performance", description: "Conduct performance reviews.", assigned_to: createdEmployees[1].id, status: "pending", due_date: new Date(Date.now() + 86400000 * 5).toISOString() },
+          { title: "Launch Ad Campaign", description: "Start the Facebook ad campaign.", assigned_to: createdEmployees[2].id, status: "pending", due_date: new Date(Date.now() + 86400000 * 1).toISOString() },
+          { title: "Fix Bug #402", description: "Fix the UI glitch on mobile.", assigned_to: createdEmployees[3].id, status: "completed", due_date: new Date(Date.now() - 86400000 * 1).toISOString() }
+        ];
+
+        for (const t of tasks) {
+          const { data: existing } = await supabase.from("tasks").select("id").eq("title", t.title).maybeSingle();
+          if (!existing) {
+            await supabase.from("tasks").insert(t);
+          }
+        }
+      }
+
+      // 4. Insert leaves
+      if (createdEmployees.length >= 5) {
+        const leaves = [
+          { employee_id: createdEmployees[0].id, leave_type: "sick", start_date: new Date(Date.now() + 86400000 * 10).toISOString().split("T")[0], end_date: new Date(Date.now() + 86400000 * 11).toISOString().split("T")[0], reason: "Medical appointment", status: "pending" },
+          { employee_id: createdEmployees[3].id, leave_type: "annual", start_date: new Date(Date.now() + 86400000 * 20).toISOString().split("T")[0], end_date: new Date(Date.now() + 86400000 * 25).toISOString().split("T")[0], reason: "Family vacation", status: "approved" },
+          { employee_id: createdEmployees[4].id, leave_type: "casual", start_date: new Date(Date.now() + 86400000 * 5).toISOString().split("T")[0], end_date: new Date(Date.now() + 86400000 * 5).toISOString().split("T")[0], reason: "Personal work", status: "pending" }
+        ];
+
+        for (const l of leaves) {
+          const { data: existing } = await supabase.from("leaves").select("id").eq("employee_id", l.employee_id).eq("reason", l.reason).maybeSingle();
+          if (!existing) {
+            await supabase.from("leaves").insert(l);
+          }
+        }
+      }
+
+      toast.success("Database seeded successfully!");
+      queryClient.invalidateQueries({ queryKey: ["dash"] });
+    } catch (err: any) {
+      toast.error("Error seeding: " + err.message);
+      console.error(err);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <div>
       <PageHeader
@@ -107,11 +194,18 @@ export default function Dashboard() {
           </div>
 
           {/* Welcome Card */}
-          <Card className="p-6 mt-6 shadow-card">
-            <h3 className="font-semibold mb-2">Welcome to DeVerse IT Solutions</h3>
-            <p className="text-muted-foreground text-sm">
-              Use the sidebar to manage employees, approve leave requests, run payroll, and assign tasks.
-            </p>
+          <Card className="p-6 mt-6 shadow-card flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 className="font-semibold mb-2">Welcome to DeVerse IT Solutions</h3>
+              <p className="text-muted-foreground text-sm">
+                Use the sidebar to manage employees, approve leave requests, run payroll, and assign tasks.
+              </p>
+            </div>
+            <div className="flex shrink-0">
+              <Button onClick={handleSeedData} disabled={seeding}>
+                {seeding ? "Seeding..." : "Seed Sample Data"}
+              </Button>
+            </div>
           </Card>
 
           {/* All Employees Table */}
