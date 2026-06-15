@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 226 70% 4%;
+    --foreground: 180 100% 90%;
+    --card: 226 50% 6%;
+    --card-foreground: 180 100% 90%;
+    --popover: 226 50% 6%;
+    --popover-foreground: 180 100% 90%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 226 70% 4%;
+    --primary-glow: 180 100% 70%;
+    --secondary: 226 40% 12%;
+    --secondary-foreground: 180 100% 90%;
+    --muted: 226 40% 12%;
+    --muted-foreground: 180 40% 65%;
+    --accent: 291 100% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 80% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 100% 50%;
+    --warning-foreground: 0 0% 100%;
+    --border: 226 40% 15%;
+    --input: 226 40% 15%;
+    --ring: 180 100% 50%;
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50%), hsl(291 100% 60%));
+    --gradient-subtle: linear-gradient(180deg, hsl(226 50% 6%), hsl(226 70% 3.5%));
+    --shadow-elegant: 0 0 25px hsl(180 100% 50% / 0.25);
+    --shadow-card: 0 0 15px hsl(226 40% 15% / 0.5), 0 0 5px hsl(180 100% 50% / 0.05);
+
+    --sidebar-background: 226 60% 4.5%;
+    --sidebar-foreground: 180 100% 90%;
+    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary-foreground: 226 70% 4%;
+    --sidebar-accent: 226 40% 10%;
+    --sidebar-accent-foreground: 180 100% 90%;
+    --sidebar-border: 226 40% 12%;
+    --sidebar-ring: 180 100% 50%;
+  }
+
+  .dark {
+    --background: 240 80% 2.5%;
+    --foreground: 190 100% 95%;
+    --card: 240 60% 4%;
+    --card-foreground: 190 100% 95%;
+    --popover: 240 60% 4%;
+    --popover-foreground: 190 100% 95%;
+    --primary: 291 100% 60%;
+    --primary-foreground: 240 80% 2.5%;
+    --primary-glow: 190 100% 50%;
+    --secondary: 240 40% 10%;
+    --secondary-foreground: 190 100% 95%;
+    --muted: 240 40% 10%;
+    --muted-foreground: 190 40% 70%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 240 80% 2.5%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 80% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 100% 55%;
+    --warning-foreground: 0 0% 0%;
+    --border: 240 40% 12%;
+    --input: 240 40% 12%;
+    --ring: 291 100% 60%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(291 100% 60%), hsl(190 100% 50%));
+    --gradient-subtle: linear-gradient(180deg, hsl(240 60% 4%), hsl(240 80% 2%));
+    --shadow-elegant: 0 0 30px hsl(291 100% 60% / 0.3);
+    --shadow-card: 0 0 20px hsl(240 40% 12% / 0.6);
+
+    --sidebar-background: 240 70% 3%;
+    --sidebar-foreground: 190 100% 95%;
+    --sidebar-primary: 291 100% 60%;
+    --sidebar-primary-foreground: 240 80% 2.5%;
+    --sidebar-accent: 240 40% 8%;
+    --sidebar-accent-foreground: 190 100% 95%;
+    --sidebar-border: 240 40% 10%;
+    --sidebar-ring: 291 100% 60%;
+  }
+}
+
+@layer base {
+  * { 
+    @apply border-border/60; 
+  }
+  body { 
+    @apply bg-background text-foreground; 
+    font-feature-settings: "cv11", "ss01";
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(291, 100%, 60%, 0.08) 0, transparent 40%),
+      radial-gradient(at 100% 0%, hsla(180, 100%, 50%, 0.08) 0, transparent 40%),
+      linear-gradient(to bottom, transparent, rgba(10, 12, 22, 0.4)),
+      radial-gradient(rgba(180, 100%, 50%, 0.03) 1px, transparent 0);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+    background-attachment: fixed;
+  }
+}
+
+/* Glassmorphism and Neon accents */
+.card, .shadow-card {
+  background: rgba(13, 17, 34, 0.7) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 255, 0.1) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.03), inset 0 0 12px rgba(255, 255, 255, 0.01) !important;
+  transition: all 0.3s ease;
+}
+
+.card:hover, .shadow-card:hover {
+  border-color: rgba(0, 255, 255, 0.25) !important;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.06), inset 0 0 12px rgba(255, 255, 255, 0.02) !important;
+}
+
+input, select, textarea {
+  background-color: rgba(10, 12, 22, 0.6) !important;
+  border-color: rgba(0, 255, 255, 0.12) !important;
+  color: hsl(180 100% 90%) !important;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: hsl(180 100% 50%) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2) !important;
+  outline: none;
+}
+
+button.btn-primary, .bg-primary {
+  background: linear-gradient(135deg, #00ffff, #d946ef) !important;
+  color: #0c0f1d !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+button.btn-primary:hover, .bg-primary:hover {
+  opacity: 0.95;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.5), 0 0 10px rgba(217, 70, 239, 0.3) !important;
+  transform: translateY(-1px);
+}
